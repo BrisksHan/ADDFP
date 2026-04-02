@@ -145,3 +145,7 @@ If you use this repository, please cite:
 
 `Drug-side effect frequency prediction using an asymmetric multi-task learning approach`, *Discover Artificial Intelligence*, 2025.  
 Link: https://link.springer.com/article/10.1007/s44163-025-00616-y
+
+## Contact
+
+If you encounter any problems, feel free to contact me at `hanzhang89@qq.com`.
