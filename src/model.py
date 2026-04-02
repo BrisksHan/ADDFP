@@ -249,7 +249,7 @@ class model_st(nn.Module):
     def forward(self, drug_features):
         side_effect_tensor = self.side_encoder_encoder(self.side_effects_tensor)
 
-        molecular_graph, drug_text_similarity_tensor, drug_smiles_encoding_tensor, drug_descrption_embeddings_tensor, drug_mf, drug_target_feature, chemberta_embeddings = drug_features
+        molecular_graph, drug_text_similarity_tensor, drug_smiles_encoding_tensor, drug_descrption_embeddings_tensor, drug_mf = drug_features
 
 
         #--------------------side_effect graph-------------
@@ -394,7 +394,7 @@ def Train_Model(dataset, side_effect_edges, se_description_embeddings, epochs = 
         for epoch in tqdm(range(epochs)):
             the_loss = 0
             #with tqdm(total=len(train_loader), desc=f'Epoch {epoch + 1}/{epochs}', unit='batch') as pbar:
-            for i, (input1, input2, input3, input4, input5, input6, input7, labels) in enumerate(train_loader):
+            for i, (input1, input2, input3, input4, input5, labels) in enumerate(train_loader):
                 
                 #drug_smile, drug_embedding, target_sequence, target_embedding
                 #drug_smile = drug_smile.cuda(final_device_ids[0])
@@ -407,7 +407,7 @@ def Train_Model(dataset, side_effect_edges, se_description_embeddings, epochs = 
                 optimizer.zero_grad()
 
                 # Forward pass
-                predictions_regression, predictions_classification = model((input1, input2, input3, input4, input5, input6, input7))
+                predictions_regression, predictions_classification = model((input1, input2, input3, input4, input5))
 
                 #print(predictions.shape)
                 #print(labels.shape)
@@ -496,12 +496,12 @@ def Predict(Test_data, side_effect_edges, se_description_embeddings, kg_dim = 10
     #frequency, drug_text_similarity, smiles_encoding, drug_description_embedding, drug_mfp, smiles_str
     with torch.no_grad():
 
-        for i, (input1, input2, input3, input4, input5, input6, input7, labels) in enumerate(test_loader):
+        for i, (input1, input2, input3, input4, input5, labels) in enumerate(test_loader):
 
             #print(input1.shape)
             #print(input2.shape)
             #print(input3.shape)
-            prediction_regression, prediction_classification = model((input1, input2, input3, input4, input5, input6, input7))
+            prediction_regression, prediction_classification = model((input1, input2, input3, input4, input5))
             #cur_predicttion = cur_predicttion.squeeze(0).cpu().numpy()
             prediction_regression = prediction_regression.squeeze(0).cpu().numpy()
             prediction_classification = prediction_classification.squeeze(0).cpu().numpy()

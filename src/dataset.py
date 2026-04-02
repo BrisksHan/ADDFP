@@ -106,7 +106,7 @@ class TrainDataset(InMemoryDataset):
         # Get molecular graph
         #mol_graph = self.graphs[idx]
         
-        frequency, drug_text_similarity, smiles_encoding, drug_description_embedding, drug_mfp, smiles_str, drug_target_feature, llm_molecular_embedding = self.data[idx]
+        frequency, drug_text_similarity, smiles_encoding, drug_description_embedding, drug_mfp, smiles_str = self.data[idx]
         
         return (
                 self.graphs[idx],
@@ -114,8 +114,6 @@ class TrainDataset(InMemoryDataset):
                 smiles_encoding,
                 drug_description_embedding,
                 drug_mfp,
-                drug_target_feature,
-                llm_molecular_embedding,
                 frequency
             )
 

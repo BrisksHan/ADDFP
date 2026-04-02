@@ -1,7 +1,7 @@
 import argparse
+from pathlib import Path
 import read_data
 import model
-import llm_inference
 import structural_encoding
 import numpy as np
 from sklearn.metrics import mean_squared_error, accuracy_score, precision_score, recall_score, f1_score
@@ -15,6 +15,7 @@ import create_similarity_network
 
 
 def save_results_to_file(results, filename):
+    Path(filename).parent.mkdir(parents=True, exist_ok=True)
     with open(filename, 'w') as f:
         for key, value in results.items():
             f.write(f"{key}: {value}\n")
@@ -69,24 +70,14 @@ def single_exp(split = 0, cvs = 1, epoch = 200, device = 'cuda:0'):
 
 
 
-    drug_descrption_embeddings = llm_inference.bert_sentence_inference_s4(read_data.get_all_drug_descriptions(), device = device)
-    se_descrption_embeddings = llm_inference.bert_sentence_inference_s4(read_data.get_all_side_descriptions(), device = device)
-    
-    se_descrption_embeddings = torch.tensor(se_descrption_embeddings, dtype=torch.float)
+    drug_descrption_embeddings = read_data.read_drug_description_embeddings()
+    se_descrption_embeddings = torch.as_tensor(read_data.read_side_description_embeddings(), dtype=torch.float)
 
     drug_smiles = read_data.get_all_drug_smiles()
-
-    drug_smiles_embeddings = llm_inference.chemberta_smiles_inference_entire_sequence(drug_smiles, device = device)
-
-    #print(drug_smiles_embeddings.shape)
-
-    #raise Exception('type:', type(drug_smiles_embeddings))
 
     drug_text_similarity = read_data.read_drug_text_smilarity()#from previous work
 
     drug_mfs = read_data.get_drug_morgan_fingerprints()#from previous work
-
-    drug_target_features = read_data.read_drug_target_feature()
 
     Train_data = []
     Test_data = []
@@ -94,14 +85,12 @@ def single_exp(split = 0, cvs = 1, epoch = 200, device = 'cuda:0'):
         input_1 = torch.tensor(cur_fold_frequency_table[drug_index], dtype=torch.float)#from previous work
         input_2 = torch.tensor(drug_text_similarity[drug_index], dtype=torch.float)#from reevious work dim 750
         input_3 = torch.tensor(structural_encoding.smile_encoding(drug_smiles[drug_index]), dtype=torch.float)# 
-        input_4 = torch.tensor(drug_descrption_embeddings[drug_index], dtype=torch.float)
+        input_4 = torch.as_tensor(drug_descrption_embeddings[drug_index], dtype=torch.float)
         input_5 = torch.tensor(drug_mfs[drug_index], dtype=torch.float)#from previous work
         input_6 = drug_smiles[drug_index]#max 1021
-        input_7 = drug_target_features[drug_index]
-        input_8 = torch.tensor(drug_smiles_embeddings[drug_index], dtype=torch.float)
 
         #please note that in dataset.py the order has been changed, thus input and prediction model input is not identical
-        cur_info = (input_1, input_2, input_3, input_4, input_5, input_6, input_7, input_8)
+        cur_info = (input_1, input_2, input_3, input_4, input_5, input_6)
         if drug_index in cur_fold_train_data:
             Train_data.append(cur_info)
             Test_data.append(cur_info)
@@ -131,6 +120,8 @@ def single_exp(split = 0, cvs = 1, epoch = 200, device = 'cuda:0'):
 
 
 
+    Path('trained_model').mkdir(exist_ok=True)
+    Path('results').mkdir(exist_ok=True)
     model.Train_Model(Train_dataset, side_effect_edges, se_descrption_embeddings, save_path='trained_model/model_st_q5_fold_' + str(split) + '.pt', epochs=epoch, batch_size=10, lr=0.001, device_id=device)
 
 

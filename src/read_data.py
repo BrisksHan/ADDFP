@@ -7,7 +7,6 @@ import utils
 import csv
 from rdkit import Chem
 from rdkit.Chem import AllChem
-import lzma
 
 
 
@@ -118,10 +117,15 @@ def read_drug_text_smilarity(file_path='data/Text_similarity_five.pkl'):
         data = pickle.load(file)
     return data
 
-def read_drug_target_feature():
-    with lzma.open('data/drug_target.xz', 'rb') as f:
-        target_features = pickle.load(f)
-    return target_features
+def read_drug_description_embeddings(file_path='data/drug_description_embeddings.pkl'):
+    with open(file_path, 'rb') as file:
+        data = pickle.load(file)
+    return data
+
+def read_side_description_embeddings(file_path='data/side_description_embeddings.pkl'):
+    with open(file_path, 'rb') as file:
+        data = pickle.load(file)
+    return data
 
 def get_drug_morgan_fingerprints():
     drug_mfs = []
